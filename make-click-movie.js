@@ -1,7 +1,14 @@
 var math2d = require('basic-2d-math');
 
 function makeClickMovie(
-  { startCoord, clickCoords, backgroundMovieFile, cursorImageFile, outputFile },
+  {
+    startCoord,
+    clickCoords,
+    backgroundMovieFile,
+    cursorImageFile,
+    activeCursorImageFile,
+    outputFile
+  },
   done
 ) {
   var command = makeFfmpegCommandsForClickMovie({
@@ -9,6 +16,7 @@ function makeClickMovie(
     clickCoords,
     backgroundMovieFile,
     cursorImageFile,
+    activeCursorImageFile,
     outputFile
   });
   console.log(command);
@@ -18,11 +26,12 @@ function makeFfmpegCommandsForClickMovie({
   startCoord,
   clickCoords,
   pixelsToMovePerSecond = 200,
-  clicksPerPoint = 3,
-  clickFlashOnLength = 0.1,
+  clicksPerPoint = 2,
+  clickFlashOnLength = 0.2,
   clickFlashOffLength = 0.1,
   backgroundMovieFile,
   cursorImageFile,
+  activeCursorImageFile,
   outputFile
 }) {
   var overlayClauses = [];
@@ -52,8 +61,10 @@ function makeFfmpegCommandsForClickMovie({
     overlayClauses = overlayClauses.concat(clauses);
   }
 
-  return `ffmpeg -i ${backgroundMovieFile} -i ${cursorImageFile} \\
-    -filter_complex "[0:v][1:v] \\
+  return `ffmpeg -i ${backgroundMovieFile} -i ${cursorImageFile} -i ${
+    activeCursorImageFile
+  } \\
+    -filter_complex "[0:v] \\
     ${overlayClauses.join('; \\\n')}" \\
     -pix_fmt yuv420p -c:a copy \\
     ${outputFile}`;
@@ -91,27 +102,39 @@ function getMovementOverlayClauses({
   var elapsedTime = travelTime;
   var clickClauses = [];
 
-  // Add clauses for indicating clicks by flashing off and on for each click.
+  // Add clauses for indicating clicks by alternating cursor image with active cursor image.
   for (var i = 0; i < numberOfClicks; ++i) {
-    let clickStepLabel = `${label}_click_${i}`;
+    let clickActiveStepLabel = `${label}_click_active_${i}`;
+    let clickNormalStepLabel = `${label}_click_inactive_${i}`;
     if (i === 0) {
-      moveClause += `[${clickStepLabel}]`;
+      moveClause += `[${clickActiveStepLabel}]`;
     }
-    elapsedTime += clickFlashOffLength;
-    let clickClause = `[${clickStepLabel}][1:v] overlay=x=${endCoord[0]}:y=${
-      endCoord[1]
-    }:enable='between(t,${startTime + elapsedTime},${startTime +
-      elapsedTime +
-      clickFlashOnLength})'`;
+
+    let activeCursorClause = `[${clickActiveStepLabel}][2:v] overlay=x=${
+      endCoord[0]
+    }:y=${endCoord[1]}:enable='between(t,${startTime +
+      elapsedTime},${startTime + elapsedTime + clickFlashOnLength})' [${
+      clickNormalStepLabel
+    }]`;
+
     elapsedTime += clickFlashOnLength;
+
+    let normalCursorClause = `[${clickNormalStepLabel}][1:v] overlay=x=${
+      endCoord[0]
+    }:y=${endCoord[1]}:enable='between(t,${startTime +
+      elapsedTime},${startTime + elapsedTime + clickFlashOffLength})'`;
+
+    elapsedTime += clickFlashOffLength;
+
     if (i < numberOfClicks - 1) {
-      clickClause += ` [${label}_click_${i + 1}]`;
+      normalCursorClause += ` [${label}_click_active_${i + 1}]`;
     } else if (nextIndex) {
       // The next clause to run after this last click clause will be
       // the next movement clause.
-      clickClause += ` [step${nextIndex}]`;
+      normalCursorClause += ` [step${nextIndex}]`;
     }
-    clickClauses.push(clickClause);
+    clickClauses.push(activeCursorClause);
+    clickClauses.push(normalCursorClause);
   }
 
   return { clauses: [moveClause].concat(clickClauses), elapsedTime };
