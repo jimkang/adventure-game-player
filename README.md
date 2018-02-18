@@ -3,6 +3,12 @@ adventure-game-player
 
 A bot that makes scenes of attempts to play things as adventure games.
 
+Modes:
+
+- "Ah, time to kick back with an adventure game."
+- "Time to get some work done!"
+- "Let's surf the web."
+
 Installation
 ------------
 

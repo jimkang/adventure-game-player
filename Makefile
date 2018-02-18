@@ -79,15 +79,24 @@ try-compositing-not-moving: bg-movie.mp4
 
 try-compositing-moving: bg-movie.mp4
 	rm -f output.mp4
-	ffmpeg -i temp.mp4 -i static/basic-pointer.png \
+	ffmpeg -i bg-movie.mp4 -i static/basic-pointer.png \
 		-filter_complex "[0:v][1:v] \
-		overlay=x='t*200:y=400':enable='between(t,0, 3)' [click1]; \
-		[click1][1:v] overlay=x='3*200:y=400':enable='between(t,3.1,3.2)' [click2]; \
-		[click2][1:v] overlay=x='3*200:y=400':enable='between(t,3.3,3.4)' [click3]; \
-		[click3][1:v] overlay=x='3*200:y=400':enable='between(t,3.5,3.6)' [click4]; \
-		[click4][1:v] overlay=x='3*200:y=400':enable='between(t,3.7,3.8)' [back]; \
-		[back][1:v] overlay=x='200*(3 - (t - 3)):y=300':enable='between(t,4, 15)'" \
+		overlay=x='t*200:y=t*100':enable='between(t,0, 3)' [click1]; \
+		[click1][1:v] overlay=x='3*200':y=400:enable='between(t,3.1,3.2)' [click2]; \
+		[click2][1:v] overlay=x='3*200':y=400:enable='between(t,3.3,3.4)' [click3]; \
+		[click3][1:v] overlay=x='3*200':y=400:enable='between(t,3.5,3.6)' [click4]; \
+		[click4][1:v] overlay=x='3*200':y=400:enable='between(t,3.7,3.8)' [back]; \
+		[back][1:v] overlay=x='200*(3 - (t - 3))':y=300:enable='between(t,4, 15)'" \
 		-pix_fmt yuv420p -c:a copy \
+		output.mp4
+
+
+try-compositing-one-movement: bg-movie.mp4
+	rm -f output.mp4
+	ffmpeg -i bg-movie.mp4 -i static/basic-pointer.png \
+	-filter_complex "[0:v][1:v] \
+	overlay=x=t*200:y=t*100:enable='between(t,0, 3)'" \
+	-pix_fmt yuv420p -c:a copy \
 		output.mp4
 
 prettier:
