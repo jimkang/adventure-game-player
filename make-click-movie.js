@@ -37,15 +37,19 @@ function makeFfmpegCommandsForClickMovie({
     if (i < clickCoords.length - 1) {
       nextIndex = i + 1;
     }
-    let { clause, travelTime } = getMovementOverlayClause({
+    let { clauses, elapsedTime } = getMovementOverlayClauses({
       beginCoord,
       endCoord: clickCoords[i],
       index: i,
       nextIndex,
-      startTime: nextStepStartTime
+      startTime: nextStepStartTime,
+      pixelsToMovePerSecond,
+      numberOfClicks: clicksPerPoint,
+      clickFlashOnLength,
+      clickFlashOffLength
     });
-    nextStepStartTime += travelTime;
-    overlayClauses.push(clause);
+    nextStepStartTime += elapsedTime;
+    overlayClauses = overlayClauses.concat(clauses);
   }
 
   return `ffmpeg -i ${backgroundMovieFile} -i ${cursorImageFile} \\
@@ -53,31 +57,64 @@ function makeFfmpegCommandsForClickMovie({
     ${overlayClauses.join('; \\\n')}" \\
     -pix_fmt yuv420p -c:a copy \\
     ${outputFile}`;
+}
 
-  function getMovementOverlayClause({
-    beginCoord,
-    endCoord,
-    index,
-    nextIndex,
-    startTime
-  }) {
-    var travelVector = math2d.subtractPairs(endCoord, beginCoord);
-    var distance = math2d.getVectorMagnitude(travelVector);
-    var travelTime = distance / pixelsToMovePerSecond;
-    var clause = `overlay=x=${beginCoord[0]}+(t-${startTime})/${travelTime}*${
-      travelVector[0]
-    }:y=${beginCoord[1]}+(t-${startTime})/${travelTime}*${
-      travelVector[1]
-    }:enable='between(t,${startTime},${startTime + travelTime})'`;
+function getMovementOverlayClauses({
+  beginCoord,
+  endCoord,
+  index,
+  nextIndex,
+  startTime,
+  pixelsToMovePerSecond,
+  numberOfClicks,
+  clickFlashOnLength,
+  clickFlashOffLength
+}) {
+  var travelVector = math2d.subtractPairs(endCoord, beginCoord);
+  var distance = math2d.getVectorMagnitude(travelVector);
+  var travelTime = distance / pixelsToMovePerSecond;
+  var label = `step${index}`;
+  var moveClause = `overlay=x=${beginCoord[0]}+(t-${startTime})/${travelTime}*${
+    travelVector[0]
+  }:y=${beginCoord[1]}+(t-${startTime})/${travelTime}*${
+    travelVector[1]
+  }:enable='between(t,${startTime},${startTime + travelTime})'`;
 
-    if (index > 0) {
-      clause = `[step${index}][1:v] ${clause}`;
-    }
-    if (nextIndex) {
-      clause += ` [step${nextIndex}]`;
-    }
-    return { clause, travelTime };
+  if (index > 0) {
+    moveClause = `[${label}][1:v] ${moveClause}`;
   }
+
+  if (numberOfClicks < 1 && nextIndex) {
+    moveClause += ` [step${nextIndex}]`;
+  }
+
+  var elapsedTime = travelTime;
+  var clickClauses = [];
+
+  // Add clauses for indicating clicks by flashing off and on for each click.
+  for (var i = 0; i < numberOfClicks; ++i) {
+    let clickStepLabel = `${label}_click_${i}`;
+    if (i === 0) {
+      moveClause += `[${clickStepLabel}]`;
+    }
+    elapsedTime += clickFlashOffLength;
+    let clickClause = `[${clickStepLabel}][1:v] overlay=x=${endCoord[0]}:y=${
+      endCoord[1]
+    }:enable='between(t,${startTime + elapsedTime},${startTime +
+      elapsedTime +
+      clickFlashOnLength})'`;
+    elapsedTime += clickFlashOnLength;
+    if (i < numberOfClicks - 1) {
+      clickClause += ` [${label}_click_${i + 1}]`;
+    } else if (nextIndex) {
+      // The next clause to run after this last click clause will be
+      // the next movement clause.
+      clickClause += ` [step${nextIndex}]`;
+    }
+    clickClauses.push(clickClause);
+  }
+
+  return { clauses: [moveClause].concat(clickClauses), elapsedTime };
 }
 
 module.exports = makeClickMovie;
