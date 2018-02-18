@@ -99,5 +99,6 @@ try-compositing-one-movement: bg-movie.mp4
 	-pix_fmt yuv420p -c:a copy \
 		output.mp4
 
-prettier:
-	prettier --single-quote --write "**/*.js"
+try-make-click-movie:
+	rm -f make-click-test.mp4
+	node tools/try-make-click-movie.js
