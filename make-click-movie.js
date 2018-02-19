@@ -1,4 +1,5 @@
 var math2d = require('basic-2d-math');
+var { exec } = require('child_process');
 
 function makeClickMovie(
   {
@@ -20,6 +21,7 @@ function makeClickMovie(
     outputFile
   });
   console.log(command);
+  exec(command, done);
 }
 
 function makeFfmpegCommandsForClickMovie({

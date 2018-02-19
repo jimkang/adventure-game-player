@@ -76,6 +76,7 @@ try-compositing-not-moving: bg-movie.mp4
 		-filter_complex "[0:v][1:v] overlay=25:25:enable='between(t,0,20)'" \
 		-pix_fmt yuv420p -c:a copy \
 		output.mp4
+
 try-compositing-moving: bg-movie.mp4
 	rm -f output.mp4
 	ffmpeg -i bg-movie.mp4 -i static/basic-pointer.png \
