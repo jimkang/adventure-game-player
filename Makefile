@@ -6,6 +6,10 @@ SSHCMD = ssh $(USER)@$(SERVER)
 PRIVSSHCMD = ssh $(PRIVUSER)@$(SERVER)
 APPDIR = /opt/$(PROJECTNAME)
 
+test:
+	rm -f make-click-test.mp4
+	node tests/make-click-movie-cmd-tests.js
+
 pushall: sync
 	git push origin master
 

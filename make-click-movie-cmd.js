@@ -1,30 +1,6 @@
 var math2d = require('basic-2d-math');
-var { exec } = require('child_process');
 
-function makeClickMovie(
-  {
-    startCoord,
-    clickCoords,
-    backgroundMovieFile,
-    cursorImageFile,
-    activeCursorImageFile,
-    outputFile
-  },
-  done
-) {
-  var command = makeFfmpegCommandsForClickMovie({
-    startCoord,
-    clickCoords,
-    backgroundMovieFile,
-    cursorImageFile,
-    activeCursorImageFile,
-    outputFile
-  });
-  console.log(command);
-  exec(command, done);
-}
-
-function makeFfmpegCommandsForClickMovie({
+function makeClickMovieCmd({
   startCoord,
   clickCoords,
   pixelsToMovePerSecond = 200,
@@ -142,4 +118,4 @@ function getMovementOverlayClauses({
   return { clauses: [moveClause].concat(clickClauses), elapsedTime };
 }
 
-module.exports = makeClickMovie;
+module.exports = makeClickMovieCmd;
