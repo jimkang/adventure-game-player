@@ -6,9 +6,6 @@ SSHCMD = ssh $(USER)@$(SERVER)
 PRIVSSHCMD = ssh $(PRIVUSER)@$(SERVER)
 APPDIR = /opt/$(PROJECTNAME)
 
-# pushall: sync set-permissions restart-remote
-# 	git push origin master
-
 pushall: sync
 	git push origin master
 
@@ -16,47 +13,6 @@ sync:
 	rsync -a $(HOMEDIR) $(USER)@$(SERVER):/opt/ \
 		--exclude node_modules/ --exclude image-output/ --exclude data/
 	$(SSHCMD) "cd $(APPDIR) && npm install"
-
-set-permissions:
-	$(SSHCMD) "chmod +x $(APPDIR)/$(PROJECTNAME)-responder.js"
-
-check-log:
-	$(SSHCMD) "journalctl -r -u $(PROJECTNAME)"
-
-run-multiple:
-	number=1 ; while [[ $$number -le 10 ]] ; do \
-		node adventure-game-player-post.js --dry; \
-		((number = number + 1)) ; \
-	done
-
-run-dry-on-server:
-	$(SSHCMD) "cd $(APPDIR) && node adventure-game-player-post.js --dry"
-
-run-on-server:
-	$(SSHCMD) "cd $(APPDIR) && node adventure-game-player-post.js"
-
-get-image-output-from-server:
-	$(SSHCMD) "cd $(APPDIR) && tar zcvf image-output.tgz image-output/*"
-	scp $(USER)@$(SERVER):$(APPDIR)/image-output.tgz server-image-output.tgz
-	tar zxvf server-image-output.tgz
-
-lint:
-	./node_modules/.bin/eslint .
-
-update-remote: sync set-permissions restart-remote
-
-restart-remote:
-	$(PRIVSSHCMD) "service $(PROJECTNAME) restart"
-
-install-service:
-	$(PRIVSSHCMD) "cp $(APPDIR)/$(PROJECTNAME).service /etc/systemd/system && \
-	systemctl enable $(PROJECTNAME)"
-
-stop-remote:
-	$(PRIVSSHCMD) "service $(PROJECTNAME) stop"
-
-check-status:
-	$(SSHCMD) "systemctl status $(PROJECTNAME)"
 
 prettier:
 	prettier --single-quote --write "**/*.js"
@@ -116,3 +72,7 @@ try-compositing-one-movement: bg-movie.mp4
 try-make-click-movie:
 	rm -f make-click-test.mp4
 	node tools/try-make-click-movie.js
+
+try-make-click-movie-remote:
+	# $(SSHCMD) "cd $(APPDIR) && rm -f make-click-test.mp4 &&  node tools/try-make-click-movie.js"
+	scp $(USER)@$(SERVER):$(APPDIR)/make-click-test.mp4 remote-test.mp4
