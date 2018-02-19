@@ -39,13 +39,16 @@ function makeClickMovieCmd({
     overlayClauses = overlayClauses.concat(clauses);
   }
 
-  return `ffmpeg -i ${backgroundMovieFile} -i ${cursorImageFile} -i ${
-    activeCursorImageFile
-  } \\
-    -filter_complex "[0:v] \\
-    ${overlayClauses.join('; \\\n')}" \\
-    -pix_fmt yuv420p -c:a copy \\
-    ${outputFile}`;
+  return {
+    cmd: `ffmpeg -i ${backgroundMovieFile} -i ${cursorImageFile} -i ${
+      activeCursorImageFile
+    } \\
+      -filter_complex "[0:v] \\
+      ${overlayClauses.join('; \\\n')}" \\
+      -pix_fmt yuv420p -c:a copy \\
+      ${outputFile}`,
+    duration: nextStepStartTime
+  };
 }
 
 function getMovementOverlayClauses({
