@@ -9,6 +9,11 @@ Modes:
 - "Time to get some work done!"
 - "Let's surf the web."
 
+TODO:
+
+- Hook up sources
+- Find a way to do target picking
+
 Installation
 ------------
 
