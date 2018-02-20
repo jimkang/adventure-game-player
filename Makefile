@@ -81,3 +81,6 @@ try-make-click-movie:
 try-make-click-movie-remote:
 	# $(SSHCMD) "cd $(APPDIR) && rm -f make-click-test.mp4 &&  node tools/try-make-click-movie.js"
 	scp $(USER)@$(SERVER):$(APPDIR)/make-click-test.mp4 remote-test.mp4
+
+try-gvision:
+	node tools/try-getting-image-targets.js tests/fixtures/surfaces/305286-hero-s-quest-so-you-want-to-be-a-hero-atari-st-screenshot.png
