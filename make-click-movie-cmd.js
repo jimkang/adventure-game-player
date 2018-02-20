@@ -34,15 +34,20 @@ function makeClickMovieCmd({
       step.action === 'cursor-active' ||
       step.action === 'cursor-inactive'
     ) {
+      let lengthOfSegment = step.length;
+      if (isNaN(lengthOfSegment)) {
+        if (step.action === 'cursor-active') {
+          lengthOfSegment = clickFlashOnLength;
+        } else {
+          lengthOfSegment = clickFlashOffLength;
+        }
+      }
       clauseKit = getClickOverlaySegmentClause({
         isActiveSegmentOfClick: step.action === 'cursor-active',
         coord: lastPosition,
         index: i,
         startTime: nextStepStartTime,
-        lengthOfSegment:
-          step.action === 'cursor-active'
-            ? clickFlashOnLength
-            : clickFlashOffLength
+        lengthOfSegment
       });
     }
     lastPosition = clauseKit.endCoord;

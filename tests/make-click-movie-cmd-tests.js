@@ -88,6 +88,94 @@ var testCases = [
       ],
       duration: 9.64670694126034
     }
+  },
+
+  {
+    name: 'Pauses',
+    opts: {
+      startCoord: [0, 200],
+      mouseSteps: [
+        {
+          action: 'move',
+          coord: [190, 300]
+        },
+        {
+          action: 'cursor-active'
+        },
+        {
+          action: 'cursor-inactive'
+        },
+        {
+          action: 'cursor-active'
+        },
+        {
+          action: 'cursor-inactive'
+        },
+        {
+          action: 'cursor-active'
+        },
+        {
+          // This is a pause.
+          action: 'cursor-inactive',
+          length: 4
+        },
+        {
+          action: 'cursor-active'
+        },
+        {
+          action: 'cursor-inactive'
+        },
+        {
+          action: 'cursor-active'
+        },
+        {
+          // This is a pause.
+          action: 'cursor-inactive',
+          length: 2.7
+        },
+        {
+          action: 'move',
+          coord: [583, 241]
+        },
+        {
+          action: 'cursor-active'
+        },
+        {
+          action: 'cursor-inactive'
+        },
+        {
+          action: 'cursor-active'
+        }
+      ],
+      backgroundMovieFile: 'tests/fixtures/bg-movie.mp4',
+      cursorImageFile: 'static/basic-pointer.png',
+      activeCursorImageFile: 'static/basic-pointer-negative.png',
+      outputFile: 'pause-test.mp4'
+    },
+    expected: {
+      cmdLines: [
+        'ffmpeg -i tests/fixtures/bg-movie.mp4 -i static/basic-pointer.png -i static/basic-pointer-negative.png \\',
+        '      -filter_complex "[0:v] \\',
+        "      [1:v] overlay=x=0+(t-0)/1.0735455276791945*190:y=200+(t-0)/1.0735455276791945*100:enable='between(t,0,1.0735455276791945)' [step_1_click_active]; \\",
+        "[step_1_click_active] [2:v] overlay=x=190:y=300:enable='between(t,1.0735455276791945,1.2735455276791945)' [step_2_click_inactive]; \\",
+        "[step_2_click_inactive] [1:v] overlay=x=190:y=300:enable='between(t,1.2735455276791945,1.3735455276791946)' [step_3_click_active]; \\",
+        "[step_3_click_active] [2:v] overlay=x=190:y=300:enable='between(t,1.3735455276791946,1.5735455276791945)' [step_4_click_inactive]; \\",
+        "[step_4_click_inactive] [1:v] overlay=x=190:y=300:enable='between(t,1.5735455276791945,1.6735455276791946)' [step_5_click_active]; \\",
+        "[step_5_click_active] [2:v] overlay=x=190:y=300:enable='between(t,1.6735455276791946,1.8735455276791946)' [step_6_click_inactive]; \\",
+        "[step_6_click_inactive] [1:v] overlay=x=190:y=300:enable='between(t,1.8735455276791946,5.873545527679195)' [step_7_click_active]; \\",
+        "[step_7_click_active] [2:v] overlay=x=190:y=300:enable='between(t,5.873545527679195,6.073545527679195)' [step_8_click_inactive]; \\",
+        "[step_8_click_inactive] [1:v] overlay=x=190:y=300:enable='between(t,6.073545527679195,6.173545527679194)' [step_9_click_active]; \\",
+        "[step_9_click_active] [2:v] overlay=x=190:y=300:enable='between(t,6.173545527679194,6.373545527679195)' [step_10_click_inactive]; \\",
+        "[step_10_click_inactive] [1:v] overlay=x=190:y=300:enable='between(t,6.373545527679195,9.073545527679194)' [step_11_move]; \\",
+        "[step_11_move] [1:v] overlay=x=190+(t-9.073545527679194)/1.98702038238162*393:y=300+(t-9.073545527679194)/1.98702038238162*-59:enable='between(t,9.073545527679194,11.060565910060813)' [step_12_click_active]; \\",
+        "[step_12_click_active] [2:v] overlay=x=583:y=241:enable='between(t,11.060565910060813,11.260565910060812)' [step_13_click_inactive]; \\",
+        "[step_13_click_inactive] [1:v] overlay=x=583:y=241:enable='between(t,11.260565910060812,11.360565910060812)' [step_14_click_active]; \\",
+        "[step_14_click_active] [2:v] overlay=x=583:y=241:enable='between(t,11.360565910060812,11.560565910060811)'\" \\",
+        '      -pix_fmt yuv420p -c:a copy \\',
+        '      pause-test.mp4'
+      ],
+      duration: 11.5605
+    }
   }
 ];
 
@@ -107,6 +195,7 @@ function runTest(testCase) {
         'Command line ' + i + ' is correct.'
       );
     }
+    // console.log('duration', command.duration);
     t.ok(
       Math.abs(command.duration - testCase.expected.duration) < 0.001,
       'Duration is correct.'
