@@ -47,4 +47,3 @@ function createPostBody(base64encodedImage) {
     ]
   };
 }
-
