@@ -7,10 +7,10 @@ var { exec } = require('child_process');
 var testCases = [
   {
     name: 'Three points',
+    startCoord: [0, 200],
     opts: {
       imageFilePath:
         'tests/fixtures/surfaces/305286-hero-s-quest-so-you-want-to-be-a-hero-atari-st-screenshot.png',
-      startCoord: [0, 200],
       pointsOfInterest: [[190, 100], [83, 41], [20, 150]]
     }
   }
@@ -38,18 +38,14 @@ function runTest(testCase) {
     var backgroundMovieFile = baseFilename + '-background.mp4';
 
     var command = makeClickMovieCmd({
-      startCoord: testCase.opts.startCoord,
+      startCoord: testCase.startCoord,
       mouseSteps: steps,
       backgroundMovieFile,
       cursorImageFile: 'static/basic-pointer.png',
       activeCursorImageFile: 'static/basic-pointer-negative.png',
       outputFile: baseFilename + '-test.mp4'
     });
-    console.log(command.cmd); // console.log('duration', command.duration);
-    t.ok(
-      Math.abs(command.duration - testCase.expected.duration) < 0.001,
-      'Duration is correct.'
-    );
+    console.log(command); // console.log('duration', command.duration);
 
     // TODO: Write the function that generates backgroundMovie from
     // an image THEN run this command.

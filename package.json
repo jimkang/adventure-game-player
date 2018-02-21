@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/jimkang/adventure-game-player",
   "dependencies": {
-    "basic-2d-math": "^1.0.0"
+    "basic-2d-math": "^1.0.0",
+    "probable": "^2.1.1"
   },
   "devDependencies": {
     "assert-no-error": "^1.0.0",
