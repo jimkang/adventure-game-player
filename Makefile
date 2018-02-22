@@ -9,7 +9,10 @@ APPDIR = /opt/$(PROJECTNAME)
 test:
 	rm -f make-click-test.mp4
 	rm -f pause-test.mp4
+	rm -f basic-background-movie-test.mp4
 	node tests/make-click-movie-cmd-tests.js
+	node tests/make-background-movie-cmd-tests.js
+	node tests/make-random-click-script-tests.js
 
 pushall: sync
 	git push origin master

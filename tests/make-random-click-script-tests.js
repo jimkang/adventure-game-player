@@ -2,7 +2,9 @@ var test = require('tape');
 var assertNoError = require('assert-no-error');
 var makeRandomClickScript = require('../make-random-click-script');
 var makeClickMovieCmd = require('../make-click-movie-cmd');
+var makeBackgroundMovieCmd = require('../make-background-movie-cmd');
 var { exec } = require('child_process');
+var rimraf = require('rimraf');
 
 var testCases = [
   {
@@ -36,6 +38,9 @@ function runTest(testCase) {
 
     var baseFilename = testCase.name.replace(/ /g, '-');
     var backgroundMovieFile = baseFilename + '-background.mp4';
+    var outputFile = baseFilename + '-test.mp4';
+    rimraf.sync(backgroundMovieFile);
+    rimraf.sync(outputFile);
 
     var command = makeClickMovieCmd({
       startCoord: testCase.startCoord,
@@ -43,19 +48,31 @@ function runTest(testCase) {
       backgroundMovieFile,
       cursorImageFile: 'static/basic-pointer.png',
       activeCursorImageFile: 'static/basic-pointer-negative.png',
-      outputFile: baseFilename + '-test.mp4'
+      outputFile
     });
     console.log(command); // console.log('duration', command.duration);
 
-    // TODO: Write the function that generates backgroundMovie from
-    // an image THEN run this command.
-    exec(command.cmd, checkCommandResult);
+    var bgMovieCmd = makeBackgroundMovieCmd({
+      imageFilePath: testCase.opts.imageFilePath,
+      duration: command.duration,
+      outputFile: backgroundMovieFile
+    });
+    exec(bgMovieCmd, checkBGCommandResult);
+
+    function checkBGCommandResult(error) {
+      assertNoError(
+        t.ok,
+        error,
+        'No error when running command to create background movie.'
+      );
+      exec(command.cmd, checkCommandResult);
+    }
 
     function checkCommandResult(error) {
       assertNoError(t.ok, error, 'No error when running command');
       console.log(
         'Check',
-        testCase.opts.outputFile,
+        outputFile,
         'to make sure the video follows the script.'
       );
       t.end();
