@@ -63,6 +63,7 @@ function runTest(testCase) {
       backgroundMovieFile,
       cursorImageFile: 'static/basic-pointer.png',
       activeCursorImageFile: 'static/basic-pointer-negative.png',
+      pixelsToMovePerSecond: 400,
       outputFile
     });
     console.log(command); // console.log('duration', command.duration);
