@@ -5,6 +5,7 @@ var makeClickMovieCmd = require('../make-click-movie-cmd');
 var makeBackgroundMovieCmd = require('../make-background-movie-cmd');
 var { exec } = require('child_process');
 var rimraf = require('rimraf');
+var probable = require('probable');
 
 var testCases = [
   {
@@ -15,6 +16,20 @@ var testCases = [
         'tests/fixtures/surfaces/305286-hero-s-quest-so-you-want-to-be-a-hero-atari-st-screenshot.png',
       pointsOfInterest: [[190, 100], [83, 41], [20, 150]]
     }
+  },
+  {
+    name: 'Seven random points',
+    startCoord: [probable.roll(640), probable.roll(500)],
+    opts: {
+      imageFilePath:
+        'tests/fixtures/surfaces/621936-hatoful-boyfriend-windows-screenshot-feeling-sick.jpg',
+      pointsOfInterest: [0, 1, 2, 3, 4, 5, 6].map(() => [
+        probable.roll(640),
+        probable.roll(500)
+      ])
+    },
+    backgroundWidth: 640,
+    backgroundHeight: 500
   }
 ];
 
@@ -55,7 +70,9 @@ function runTest(testCase) {
     var bgMovieCmd = makeBackgroundMovieCmd({
       imageFilePath: testCase.opts.imageFilePath,
       duration: command.duration,
-      outputFile: backgroundMovieFile
+      outputFile: backgroundMovieFile,
+      width: testCase.backgroundWidth,
+      height: testCase.backgroundHeight
     });
     exec(bgMovieCmd, checkBGCommandResult);
 
